@@ -2,7 +2,7 @@
 
 import numpy as np
 from scipy.signal import savgol_filter
-
+import multiprocessing
 
 def load_data(filename):
   time = list()
@@ -26,26 +26,31 @@ def save_data(filename, time, Ubatt, discharge):
       wfile.write("{},{},{}\n".format(x,y,z))  
  
  
-def filter(filename, window_length):
-   t, U, d = load_data("{}.csv".format(filename))
-   U = savgol_filter(U, window_length, 1)
-   save_data("{}-savgol{}.csv".format(filename, window_length), t, U, d)
+def filter(args):
+ filename, window_length = args
+ print("process {}".format(filename))
+ t, U, d = load_data("{}.csv".format(filename))
+ U = savgol_filter(U, window_length, 1)
+ save_data("{}-savgol{}.csv".format(filename, window_length), t, U, d)
 
 
 if __name__ == "__main__":
-  filter("49.6ohm_cont_lipo", 21)
-  filter("24.8ohm_10min_50min_lipo", 21)
-  filter("24.8ohm_1s_1s_lipo", 7)
-  filter("24.8ohm_40min_80min_lipo", 21)
-  filter("24.8ohm_500ms_500ms_lipo", 7)
-  filter("24.8ohm_50s_50s_lipo", 7)
-  filter("24.8ohm_cont_lipo", 21)
-  filter("6.2ohm_1s_1s_lipo", 7)
-  filter("6.2ohm_1s_7s_lipo", 7)
-  filter("6.2ohm_50s_50s_lipo", 7)
-  filter("6.2ohm_cont_lipo", 21)
-  
-  filter("49.6ohm_cont_alkaline", 21)
-  filter("24.8ohm_1s_1s_alkaline", 7)
-  filter("24.8ohm_60min_90min_alkaline", 7)
-  filter("6.2ohm_1s_7s_alkaline", 7)
+  files = [
+    ["49.6ohm_cont_lipo", 21],
+    ["24.8ohm_10min_50min_lipo", 21],
+    ["24.8ohm_1s_1s_lipo", 7],
+    ["24.8ohm_40min_80min_lipo", 21],
+    ["24.8ohm_500ms_500ms_lipo", 7],
+    ["24.8ohm_50s_50s_lipo", 7],
+    ["24.8ohm_cont_lipo", 21],
+    ["6.2ohm_1s_1s_lipo", 7],
+    ["6.2ohm_1s_7s_lipo", 7],
+    ["6.2ohm_50s_50s_lipo", 7],
+    ["6.2ohm_cont_lipo", 21],
+    ["49.6ohm_cont_alkaline", 21],
+    ["24.8ohm_1s_1s_alkaline", 7],
+    ["24.8ohm_60min_90min_alkaline", 7],
+    ["6.2ohm_1s_7s_alkaline", 7]
+  ]
+  pool = multiprocessing.Pool()
+  pool.map(filter, files)
